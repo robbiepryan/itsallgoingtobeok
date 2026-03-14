@@ -2,138 +2,54 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout>
-  <main class="page">
-    <header class="hero">
-      <h1 class="hero-header">It's all going to be ok.</h1>
-      <p class="hero-sub">Here's the evidence.</p>
-    </header>
+<BaseLayout
+  title="It's all going to be ok"
+  description="Your wins against ADHD. Evidence of your capability. Powered by LockIn."
+>
+  <main class="landing">
+    <section class="hero">
+      <h1 class="hero-title">
+        Your wins.<br />
+        Your evidence.<br />
+        Your proof that ADHD doesn't define you.
+      </h1>
+      <p class="hero-sub">
+        This is the place where your victories live. Every task completed, every
+        streak held, every ball you didn't drop — it's all here. Evidence that
+        you can, even when ADHD says you can't.
+      </p>
+    </section>
 
-    <section class="stats" aria-label="Your wins">
-      <div class="stat-card stat-card--scoreboard">
-        <span class="stat-label">You vs ADHD</span>
-        <span class="stat-value stat-value--score" id="rival-record">&mdash;</span>
-      </div>
-
-      <div class="stat-card">
-        <span class="stat-value" id="tasks-completed">&mdash;</span>
-        <span class="stat-label">Battles won</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value" id="things-shipped">&mdash;</span>
-        <span class="stat-label">Things shipped</span>
-      </div>
-
-      <div class="stat-card stat-card--streak">
-        <div class="streak-row">
-          <div class="streak-col">
-            <span class="stat-value" id="best-streak">&mdash;</span>
-            <span class="stat-label">Best streak</span>
-          </div>
-          <div class="streak-divider" aria-hidden="true"></div>
-          <div class="streak-col">
-            <span class="stat-value" id="current-streak">&mdash;</span>
-            <span class="stat-label">Current streak</span>
-          </div>
-        </div>
-        <div class="streak-viz" id="streak-dots" aria-hidden="true"></div>
+    <section class="explanation">
+      <div class="explanation-card">
+        <h2 class="explanation-heading">What is this?</h2>
+        <p>
+          <strong>itsallgoingtobeok.com</strong> is your evidence board. It connects to
+          <a href="#get-app" class="link">LockIn</a>, an Android app built for people
+          with ADHD who are tired of dropping balls.
+        </p>
+        <p>
+          Every win you rack up in LockIn shows up here — a living record that
+          ADHD is losing ground. Share it with your therapist, your partner, your
+          support crew. Or just keep it for yourself, for the days when ADHD tries
+          to tell you nothing's working.
+        </p>
       </div>
     </section>
 
-    <section class="highlights" aria-label="Journal highlights"
-             id="highlights-section" hidden>
-      <h2 class="section-heading">Field report</h2>
-      <div id="journal-highlight" class="highlight-card"></div>
+    <section class="cta-section">
+      <div class="cta-group">
+        <a href="/auth/signin" class="cta cta--primary">Sign in</a>
+        <a href="#get-app" class="cta cta--secondary" id="get-app">Get the app</a>
+      </div>
+      <p class="cta-note">
+        LockIn is currently in development. Sign up to see your wins when it launches.
+      </p>
     </section>
   </main>
 </BaseLayout>
 
-<script>
-  import { fetchAchievements } from '../lib/supabase';
-
-  const ZERO_STATE: Record<string, string> = {
-    'tasks-completed': 'Ready when you are',
-    'things-shipped': 'Something is brewing',
-    'best-streak': 'Day one is a streak',
-    'current-streak': 'Right now counts',
-  };
-
-  function renderStat(el: HTMLElement | null, value: number, id: string) {
-    if (!el) return;
-    if (value === 0 && ZERO_STATE[id]) {
-      el.textContent = ZERO_STATE[id];
-      el.classList.add('stat-value--zero');
-    } else {
-      el.textContent = String(value);
-      el.classList.remove('stat-value--zero');
-    }
-  }
-
-  function renderStreakDots(container: HTMLElement | null, count: number) {
-    if (!container) return;
-    container.replaceChildren();
-    if (count <= 0) return;
-    const display = Math.min(count, 14);
-    for (let i = 0; i < display; i++) {
-      const dot = document.createElement('span');
-      dot.className = 'streak-dot';
-      dot.setAttribute('aria-hidden', 'true');
-      container.appendChild(dot);
-    }
-    if (count > 14) {
-      const more = document.createElement('span');
-      more.className = 'streak-more';
-      more.textContent = `+${count - 14}`;
-      container.appendChild(more);
-    }
-  }
-
-  async function loadData() {
-    const data = await fetchAchievements();
-
-    renderStat(document.getElementById('tasks-completed'), data.lifetimeTasksCompleted, 'tasks-completed');
-    renderStat(document.getElementById('things-shipped'), data.thingsShipped, 'things-shipped');
-    renderStat(document.getElementById('best-streak'), data.bestStreak, 'best-streak');
-    renderStat(document.getElementById('current-streak'), data.currentStreak, 'current-streak');
-
-    const rivalEl = document.getElementById('rival-record');
-    if (rivalEl) {
-      const { userWins, adhdWins } = data.rivalRecord;
-      if (userWins === 0 && adhdWins === 0) {
-        rivalEl.textContent = 'Game on';
-        rivalEl.classList.add('stat-value--zero');
-      } else {
-        rivalEl.textContent = `${userWins}\u2013${adhdWins}`;
-        rivalEl.classList.remove('stat-value--zero');
-      }
-    }
-
-    renderStreakDots(document.getElementById('streak-dots'), data.currentStreak);
-
-    const highlightsSection = document.getElementById('highlights-section');
-    const highlightEl = document.getElementById('journal-highlight');
-    if (highlightsSection && highlightEl && data.journalHighlights.length > 0) {
-      highlightsSection.hidden = false;
-      const idx = Math.floor(Math.random() * data.journalHighlights.length);
-      const h = data.journalHighlights[idx];
-      const blockquote = document.createElement('blockquote');
-      blockquote.className = 'journal-quote';
-      const p = document.createElement('p');
-      p.textContent = h.quote;
-      const cite = document.createElement('cite');
-      cite.textContent = h.date;
-      blockquote.appendChild(p);
-      blockquote.appendChild(cite);
-      highlightEl.replaceChildren(blockquote);
-    }
-  }
-
-  loadData();
-</script>
-
 <style>
-  /* ── Animations ── */
-
   @keyframes reveal-up {
     from {
       opacity: 0;
@@ -145,27 +61,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
   }
 
-  /* ── Page layout ── */
-
-  .page {
+  .landing {
     max-width: 40rem;
     margin: 0 auto;
-    padding: var(--space-lg) var(--space-md) var(--space-2xl);
+    padding: var(--space-xl) var(--space-md) var(--space-2xl);
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
     gap: var(--space-2xl);
+    justify-content: center;
   }
 
   /* ── Hero ── */
 
   .hero {
     text-align: center;
-    padding: var(--space-2xl) 0 var(--space-lg);
-    animation: reveal-up 800ms cubic-bezier(0.25, 0.1, 0.25, 1) both;
+    animation: reveal-up 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) both;
   }
 
-  .hero-header {
+  .hero-title {
     font-family: var(--font-display);
     font-size: var(--text-hero);
     font-weight: 700;
@@ -177,195 +91,108 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   .hero-sub {
-    margin-top: var(--space-sm);
+    margin-top: var(--space-lg);
     font-size: var(--text-lg);
     color: var(--color-text-muted);
+    line-height: var(--leading-relaxed);
+    max-width: 32rem;
+    margin-inline: auto;
   }
 
-  /* ── Stats — single column ── */
+  /* ── Explanation ── */
 
-  .stats {
+  .explanation {
+    animation: reveal-up 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) 0.3s both;
+  }
+
+  .explanation-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-accent);
+    border-radius: var(--radius-soft);
+    padding: var(--space-xl);
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
   }
 
-  .stat-card {
-    background: var(--color-warm-soft);
-    border: 1px solid transparent;
-    border-left: 3px solid var(--color-accent);
-    border-radius: var(--radius-soft);
-    padding: var(--space-lg);
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-    box-shadow: 0 0 0 1px var(--color-warm-glow), 0 2px 8px var(--color-warm-glow);
-    animation: reveal-up 600ms cubic-bezier(0.25, 0.1, 0.25, 1) both;
-  }
-
-  .stat-card:nth-child(1) { animation-delay: 200ms; }
-  .stat-card:nth-child(2) { animation-delay: 350ms; }
-  .stat-card:nth-child(3) { animation-delay: 500ms; }
-  .stat-card:nth-child(4) { animation-delay: 650ms; }
-
-  .stat-value {
+  .explanation-heading {
     font-family: var(--font-display);
-    font-size: var(--text-xl);
-    font-weight: 700;
-    font-variation-settings: 'SOFT' 100, 'wonk' 0;
-    color: var(--color-warm);
-  }
-
-  .stat-label {
-    font-size: var(--text-sm);
-    color: var(--color-text-muted);
-    font-weight: 500;
-  }
-
-  /* ── Zero-state soft text ── */
-
-  .stat-value--zero {
-    font-size: var(--text-base);
-    font-weight: 500;
-    font-variation-settings: 'SOFT' 100, 'wonk' 0;
-    font-style: italic;
-    color: var(--color-text-muted);
-  }
-
-  /* ── Scoreboard — hero treatment ── */
-
-  .stat-card--scoreboard {
-    border-left-width: 4px;
-    background: var(--color-glow);
-    padding: var(--space-xl) var(--space-lg);
-  }
-
-  .stat-card--scoreboard .stat-label {
-    font-size: var(--text-base);
+    font-size: var(--text-lg);
     font-weight: 600;
+    font-variation-settings: 'SOFT' 100, 'wonk' 0;
     color: var(--color-text);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    order: -1;
   }
 
-  .stat-value--score {
-    font-size: clamp(2rem, 8vw, 3rem);
-    font-weight: 900;
-    font-variation-settings: 'SOFT' 50, 'wonk' 0;
-    letter-spacing: 0.04em;
-  }
-
-  .stat-card--scoreboard .stat-value--zero {
-    font-size: var(--text-lg);
-  }
-
-  /* ── Streak — split card ── */
-
-  .stat-card--streak {
-    gap: var(--space-sm);
-  }
-
-  .streak-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-lg);
-  }
-
-  .streak-col {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-xs);
-  }
-
-  .streak-divider {
-    width: 1px;
-    height: 2.5rem;
-    background: var(--color-border);
-  }
-
-  .streak-viz {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
-    padding-top: var(--space-xs);
-    min-height: 1rem;
-  }
-
-  :global(.streak-dot) {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--color-accent);
-    opacity: 0.5;
-  }
-
-  :global(.streak-dot:last-of-type) {
-    opacity: 1;
-  }
-
-  :global(.streak-more) {
-    font-size: var(--text-sm);
+  .explanation-card p {
     color: var(--color-text-muted);
-    font-weight: 500;
-    margin-left: 2px;
-  }
-
-  /* ── Section heading ── */
-
-  .section-heading {
-    font-family: var(--font-body);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: var(--space-sm);
-  }
-
-  /* ── Journal highlight ── */
-
-  .highlights {
-    animation: reveal-up 600ms cubic-bezier(0.25, 0.1, 0.25, 1) 800ms both;
-  }
-
-  .highlight-card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-left: 3px solid var(--color-accent);
-    border-radius: var(--radius-soft);
-    overflow: hidden;
-  }
-
-  :global(.journal-quote) {
-    font-family: var(--font-display);
-    font-weight: 400;
-    font-variation-settings: 'SOFT' 100, 'wonk' 0;
-    font-style: italic;
-    font-size: var(--text-lg);
     line-height: var(--leading-relaxed);
-    padding: var(--space-lg);
   }
 
-  :global(.journal-quote cite) {
-    display: block;
-    margin-top: var(--space-sm);
+  .link {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .link:hover {
+    opacity: 0.8;
+  }
+
+  /* ── CTAs ── */
+
+  .cta-section {
+    text-align: center;
+    animation: reveal-up 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) 0.5s both;
+  }
+
+  .cta-group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-md);
+  }
+
+  .cta {
+    display: inline-block;
+    padding: var(--space-sm) var(--space-xl);
+    border-radius: var(--radius-soft);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  .cta:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  .cta--primary {
+    background: var(--color-accent);
+    color: var(--color-bg);
+  }
+
+  .cta--secondary {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+  }
+
+  .cta-note {
+    margin-top: var(--space-md);
     font-size: var(--text-sm);
-    font-style: normal;
     color: var(--color-text-muted);
+    font-style: italic;
   }
 
   /* ── Reduced motion ── */
 
   @media (prefers-reduced-motion: reduce) {
     .hero,
-    .stat-card,
-    .highlights {
+    .explanation,
+    .cta-section {
       animation: none;
       opacity: 1;
       transform: none;
