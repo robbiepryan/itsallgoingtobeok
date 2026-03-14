@@ -1,0 +1,22 @@
+---
+/**
+ * Nav — minimal navigation bar, adapts based on auth state.
+ * Placeholder for B2; currently renders nothing.
+ * Will show: logo + Sign In (unauthed) or logo + Dashboard + Sign Out (authed).
+ */
+---
+
+<nav class="site-nav" aria-label="Main navigation">
+  <slot />
+</nav>
+
+<style>
+  .site-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) var(--space-md);
+    max-width: 40rem;
+    margin: 0 auto;
+  }
+</style>

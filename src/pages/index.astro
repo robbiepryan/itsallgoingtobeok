@@ -45,10 +45,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <h2 class="section-heading">Field report</h2>
       <div id="journal-highlight" class="highlight-card"></div>
     </section>
-
-    <footer class="footer">
-      <p class="footer-text">ADHD is the opponent. Never you.</p>
-    </footer>
   </main>
 </BaseLayout>
 
@@ -146,17 +142,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     to {
       opacity: 1;
       transform: translateY(0);
-    }
-  }
-
-  @keyframes breathe {
-    0%, 100% {
-      transform: scale(1);
-      opacity: 0.4;
-    }
-    50% {
-      transform: scale(1.08);
-      opacity: 0.7;
     }
   }
 
@@ -375,31 +360,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     color: var(--color-text-muted);
   }
 
-  /* ── Footer + breathing dot ── */
-
-  .footer {
-    margin-top: auto;
-    text-align: center;
-    padding: var(--space-lg) 0;
-  }
-
-  .footer::before {
-    content: '';
-    display: block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--color-accent);
-    margin: 0 auto var(--space-sm);
-    animation: breathe 6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-  }
-
-  .footer-text {
-    font-size: var(--text-sm);
-    color: var(--color-text-muted);
-    font-weight: 500;
-  }
-
   /* ── Reduced motion ── */
 
   @media (prefers-reduced-motion: reduce) {
@@ -409,11 +369,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       animation: none;
       opacity: 1;
       transform: none;
-    }
-
-    .footer::before {
-      animation: none;
-      opacity: 0.5;
     }
   }
 </style>
