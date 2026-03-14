@@ -1,4 +1,6 @@
 ---
+import Footer from '../components/Footer.astro';
+
 interface Props {
   title?: string;
   description?: string;
@@ -35,9 +37,19 @@ const {
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
+
+    <!-- Page-specific meta tags (e.g., OG tags for profile pages) -->
+    <slot name="head" />
   </head>
   <body>
+    <!-- Navigation slot — populated by pages that need nav -->
+    <slot name="nav" />
+
+    <!-- Main page content -->
     <slot />
+
+    <!-- Site footer with breathing dot + anti-shame tagline -->
+    <Footer />
   </body>
 </html>
 
