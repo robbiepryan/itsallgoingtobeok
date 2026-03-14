@@ -1,0 +1,236 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Sign up — It's all going to be ok" description="Create your account. Start tracking your wins against ADHD.">
+  <main class="auth-page">
+    <div class="auth-card">
+      <h1 class="auth-title">New operative? Welcome.</h1>
+      <p class="auth-sub">Enter your email to join the fight against ADHD.</p>
+
+      <form id="signup-form" class="auth-form" novalidate>
+        <div class="form-group">
+          <label for="email" class="form-label">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-input"
+            placeholder="your@email.com"
+            required
+            autocomplete="email"
+          />
+        </div>
+
+        <button type="submit" class="auth-btn" id="submit-btn">
+          Send magic link
+        </button>
+
+        <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+      </form>
+
+      <p class="auth-alt">
+        Already have an account? <a href="/auth/signin" class="auth-link">Sign in</a>
+      </p>
+
+      <p class="auth-note">
+        We use magic links — no passwords to forget.
+        ADHD has enough ammo without adding password resets to the pile.
+      </p>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+
+  const form = document.getElementById('signup-form') as HTMLFormElement;
+  const emailInput = document.getElementById('email') as HTMLInputElement;
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+  const feedback = document.getElementById('feedback') as HTMLDivElement;
+
+  function showFeedback(message: string, isError = false) {
+    feedback.hidden = false;
+    feedback.textContent = message;
+    feedback.className = isError ? 'feedback feedback--error' : 'feedback feedback--success';
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+
+    if (!email) {
+      showFeedback('ADHD wants you to skip the email field. Don\'t let it.', true);
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        showFeedback('Comms jammed. Try again in a moment.', true);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send magic link';
+        return;
+      }
+
+      showFeedback('Check your email — your first magic link is on the way. ✓');
+      submitBtn.textContent = 'Link sent';
+    } catch {
+      showFeedback('ADHD cut the wire. Try again.', true);
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Send magic link';
+    }
+  });
+</script>
+
+<style>
+  .auth-page {
+    max-width: 28rem;
+    margin: 0 auto;
+    padding: var(--space-2xl) var(--space-md);
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .auth-card {
+    width: 100%;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-soft);
+    padding: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .auth-title {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 700;
+    font-variation-settings: 'SOFT' 100, 'wonk' 0;
+    color: var(--color-text);
+    text-align: center;
+  }
+
+  .auth-sub {
+    font-size: var(--text-base);
+    color: var(--color-text-muted);
+    text-align: center;
+    margin-top: calc(-1 * var(--space-sm));
+  }
+
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .form-label {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .form-input {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    padding: var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-soft);
+    background: var(--color-bg);
+    color: var(--color-text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-input:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px var(--color-glow);
+  }
+
+  .form-input::placeholder {
+    color: var(--color-text-muted);
+    opacity: 0.6;
+  }
+
+  .auth-btn {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    font-weight: 600;
+    padding: var(--space-sm) var(--space-lg);
+    border: none;
+    border-radius: var(--radius-soft);
+    background: var(--color-accent);
+    color: var(--color-bg);
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  .auth-btn:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  .auth-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .feedback {
+    font-size: var(--text-sm);
+    padding: var(--space-sm);
+    border-radius: var(--radius-soft);
+    text-align: center;
+  }
+
+  .feedback--success {
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+  }
+
+  .feedback--error {
+    background: var(--color-warm-soft);
+    color: var(--color-warm);
+  }
+
+  .auth-alt {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    text-align: center;
+  }
+
+  .auth-link {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .auth-link:hover {
+    opacity: 0.8;
+  }
+
+  .auth-note {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    text-align: center;
+    font-style: italic;
+    line-height: var(--leading-relaxed);
+  }
+</style>
