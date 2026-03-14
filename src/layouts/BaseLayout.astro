@@ -1,5 +1,6 @@
 ---
 import Footer from '../components/Footer.astro';
+import Nav from '../components/Nav.astro';
 
 interface Props {
   title?: string;
@@ -42,8 +43,8 @@ const {
     <slot name="head" />
   </head>
   <body>
-    <!-- Navigation slot — populated by pages that need nav -->
-    <slot name="nav" />
+    <!-- Site navigation — adapts to auth state client-side -->
+    <Nav />
 
     <!-- Main page content -->
     <slot />
