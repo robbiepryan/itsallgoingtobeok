@@ -1,16 +1,18 @@
 /**
- * Supabase client — fetches achievement data via PostgREST REST API.
+ * Supabase client — typed SDK client for auth, sessions, and data fetching.
  *
- * Uses raw fetch instead of @supabase/supabase-js to keep the
- * bundle tiny (~0KB overhead vs ~50KB for the SDK). The anon key
- * is intentionally public — Row Level Security on the Supabase
- * side controls data access (public_read policy).
+ * The anon key is intentionally public — Row Level Security on the Supabase
+ * side controls data access.
  */
 
+import { createClient } from '@supabase/supabase-js';
 import type { AchievementData, JournalHighlight } from './types';
 
 const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL ?? '';
 const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
+
+/** Browser-side Supabase client (singleton). */
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /** Shape of the achievement_feed row from Supabase. */
 interface AchievementFeedRow {
@@ -32,25 +34,20 @@ export async function fetchAchievements(): Promise<AchievementData> {
   }
 
   try {
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/achievement_feed?select=*&limit=1`,
-      {
-        headers: {
-          apikey: SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-        },
-      }
-    );
+    const { data, error } = await supabase
+      .from('achievement_feed')
+      .select('*')
+      .limit(1)
+      .single();
 
-    if (!response.ok) {
-      console.error('Comms jammed:', response.status, response.statusText);
+    if (error) {
+      console.error('Comms jammed:', error.code, error.message);
       return getEmptyData();
     }
 
-    const rows: AchievementFeedRow[] = await response.json();
-    if (rows.length === 0) return getEmptyData();
+    if (!data) return getEmptyData();
 
-    const row = rows[0];
+    const row = data as AchievementFeedRow;
     return {
       lifetimeTasksCompleted: row.lifetime_tasks_completed,
       thingsShipped: row.shipped_projects,
