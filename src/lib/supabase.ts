@@ -11,8 +11,16 @@ import type { AchievementData, JournalHighlight } from './types';
 const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL ?? '';
 const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
 
-/** Browser-side Supabase client (singleton). */
+/** Browser-side Supabase client (singleton). Used by client-side scripts. */
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/**
+ * Create a fresh browser-side Supabase client.
+ * Use for interactive components that need their own client instance.
+ */
+export function createBrowserClient() {
+  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
 
 /** Shape of the achievement_feed row from Supabase. */
 interface AchievementFeedRow {
